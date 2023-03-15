@@ -1,17 +1,25 @@
-sudo: required
-services:
-  - docker
+version: '1.0'
 
-before_install
-- docker build -t eycasa/react-test -f ./client/Dockerfile.dev ./client
+actions:
+  - action: 'Build Docker image'
+    type: 'DOCKER_BUILD'
+    image_name: 'your-docker-image-name'
+    dockerfile_path: '.'
+    build_context: '.'
+    push_image: true
+    registry: 'docker.io'
+    username: '${eycasa}'
+    password: '${G4nd4lph!}'
 
-script:
-  - docker run eycasa/react-test -- --coverage
-
-after_success:
-  - docker build -t eycasa/multi-client ./client
-  - docker build -t eycasa/multi-nginx ./nginx
-  - docker build -t eycasa/multi-server ./server
-  - docker build -t eycasa/multi-worker ./worker
-
+triggers:
+  - action: 'Build Docker image'
+    event_type: 'PUSH'
+    ref: 'refs/heads/main'
+    branch: 'main'
+    push_patterns:
+      - 'Dockerfile'
+      - '*.sh'
+    push_source: 'GITHUB'
+    push_target: 'DOCKER'
+    only_paths: ['.']
   
